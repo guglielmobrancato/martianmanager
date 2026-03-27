@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Martian Manager | Registration</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="assets/logo.png?v=2" type="image/png">
+    <style>
+        .register-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .register-box {
+            width: 100%;
+            max-width: 600px;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.8s ease forwards;
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .radio-btn {
+            flex: 1;
+            padding: 1rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .radio-btn.selected {
+            background: rgba(94, 129, 172, 0.2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .welcome-message h2 {
+            font-size: 2.2rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+        
+        .welcome-message p {
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .register-container {
+                padding: 1rem;
+            }
+            .register-box {
+                padding: 1.5rem;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .radio-group {
+                flex-direction: column;
+            }
+            .welcome-message h2 {
+                font-size: 1.6rem;
+            }
+            .welcome-message p {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-bg"></div>
+
+    <div class="register-container">
+        <div class="glass-panel register-box">
+            
+            <!-- STEP 1: Scelta Ruolo -->
+            <div class="step active" id="step1">
+                <h1 style="text-align: center; margin-bottom: 0.5rem;">Unisciti a Marte</h1>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Seleziona il tuo inquadramento per iniziare l'iscrizione.</p>
+                
+                <div class="radio-group">
+                    <div class="radio-btn selected" data-role="intern" id="roleIntern">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🚀</div>
+                        <strong>Tirocinante / Collaboratore</strong>
+                    </div>
+                    <div class="radio-btn" data-role="manager" id="roleManager">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">👑</div>
+                        <strong>Socio / Manager</strong>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="btnNext1" style="width: 100%;">Prosegui</button>
+                <div style="text-align: center; margin-top: 2rem; font-size: 0.85rem;">
+                    Hai già un account? <a href="index.html" style="color: var(--accent); text-decoration: none;">Torna al Login</a>
+                </div>
+            </div>
+
+            <!-- STEP 2: Dati Anagrafici Core -->
+            <div class="step" id="step2">
+                <h2 style="margin-bottom: 2rem;">Dati Personali</h2>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Nome</label>
+                        <input type="text" id="rFirstName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Cognome</label>
+                        <input type="text" id="rLastName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" id="rUsername" placeholder="es. m.rossi" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Email Lavorativa</label>
+                        <input type="email" id="rWorkEmail" placeholder="intern@martestudios.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="rPassword" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Email Personale</label>
+                        <input type="email" id="rPersonalEmail" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Cellulare</label>
+                        <input type="tel" id="rPhone" required>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn btn-outline" id="btnPrev2" style="flex:1;">Indietro</button>
+                    <button class="btn btn-primary" id="btnNext2" style="flex:1;">Prosegui</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Modulo Intern (Date e Aspettative) -->
+            <div class="step" id="step3-intern">
+                <h2 style="margin-bottom: 2rem;">Dettagli Tirocinio</h2>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Data Inizio</label>
+                        <input type="date" id="rStart" required>
+                    </div>
+                    <div class="input-group">
+                    <label>Data di fine prevista</label>
+                    <input type="date" id="rEnd" required>
+                </div>
+                <!-- Nuovi Campi Tutor Obbligatori -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div class="input-group" style="margin-top:0;">
+                        <label>Tutor di Riferimento (Nome)</label>
+                        <input type="text" id="rTutorName" placeholder="es. Vincenzo Lo Iacono" required>
+                    </div>
+                    <div class="input-group" style="margin-top:0;">
+                        <label>Email del Tutor Aziendale</label>
+                        <input type="email" id="rTutorEmail" placeholder="vincenzo@martestudios.com" required>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <label>Le tue aspettative su questo tirocinio (Opzionale)</label>
+                    <textarea id="rExpectations" rows="4" style="width: 100%; border-radius: 8px; border: 1px solid var(--glass-border); padding: 1rem; background: rgba(0,0,0,0.3); color: #fff; font-family: var(--font-body); resize: vertical;" placeholder="Cosa ti aspetti di imparare? Qual è il tuo obiettivo..."></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn btn-outline" id="btnPrev3" style="flex:1;">Indietro</button>
+                    <button class="btn btn-primary" id="btnNext3" style="flex:1;">Concludi Dati</button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Welcome & Mindset (Solo Intern) -->
+            <div class="step" id="step4-welcome">
+                <div class="welcome-message">
+                    <h2>Benvenuto in Squadra! 🤝</h2>
+                    <p>In Marte Studios lavoriamo in orizzontale. Non ci sono barriere insormontabili: sei parte integrante del team e del processo creativo.</p>
+                    <p><strong>Puoi parlare con i soci quando ti pare</strong>, esporre le tue idee e confrontarti su qualsiasi fronte del tuo progetto.</p>
+                    <p style="color: var(--danger);">C'è solo una regola d'oro: <br><strong style="font-size: 1.2rem;">IL RISPETTO ASSOLUTO DELLE SCADENZE.</strong></p>
+                    <p style="margin-top: 2rem;">I task che ti vengono assegnati sono ingranaggi vitali per la macchina produttiva. Convalidare i task in tempo è essenziale.</p>
+                    <button class="btn btn-primary" id="btnCompleteIntern" style="width: 100%; margin-top: 2rem; padding: 1.2rem;">Ho capito, portami alla Dashboard!</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/register.js"></script>
+</body>
+</html>

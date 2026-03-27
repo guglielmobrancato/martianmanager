@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Martian Manager | Dashboard</title>
+    <link rel="stylesheet" href="css/style.css?v=5">
+    <link rel="icon" href="assets/logo.png?v=2" type="image/png">
+    <style>
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(0,0,0,0.5); border-bottom: 1px solid var(--glass-border); }
+        .nav-menu { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
+        .nav-btn { background: rgba(255,255,255,0.05); color: #fff; padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--glass-border); cursor: pointer; }
+        .nav-btn.active { background: var(--accent); border-color: var(--accent); }
+        #modalProject, #modalTask { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 1000; align-items:center; justify-content:center; }
+        #modalProject.active, #modalTask.active { display: flex; }
+        .modal-content { background: #1a1a2e; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; border: 1px solid var(--glass-border); }
+        .kanban-board { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+        .kanban-col { background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; min-height: 400px; }
+        .task-card, .project-card, .team-card { background: rgba(0,0,0,0.4); padding: 1rem; border: 1px solid var(--glass-border); border-radius: 8px; margin-bottom: 1rem; }
+        #calendarGrid, #teamContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; display: flex; flex-direction: column; gap: 1rem; }
+        .toast { background: rgba(10, 15, 25, 0.95); border-left: 4px solid var(--accent); border-radius: 8px; padding: 1rem 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); color: #fff; max-width: 350px; }
+        
+        /* Hamburger Sidebar Styles */
+        @media (max-width: 900px) {
+            .nav-menu { display: none; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; width: 280px; background: rgba(10, 15, 25, 0.95); z-index: 2000; padding: 2rem; margin: 0; box-shadow: 5px 0 25px rgba(0,0,0,0.8); border-right: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
+            .nav-menu.open { display: flex !important; animation: slideInLeft 0.3s ease forwards; transform: translateX(0); }
+            .nav-menu .nav-btn { width: 100%; text-align: left; padding: 1rem; margin-bottom: 0.5rem; }
+            .hamburger-btn { display: block !important; }
+            #btnNewProject, #btnNewTask { width: 100%; margin-bottom: 0.5rem; }
+            .mobile-title { display: block !important; }
+        }
+        .mobile-title { display: none; color: var(--accent); margin-bottom: 2rem; font-size: 1.5rem; }
+        .hamburger-btn { display: none; background: transparent; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; margin-right: 1rem; transition: 0.2s; }
+        .hamburger-btn:hover { color: var(--accent); }
+        .nav-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1999; backdrop-filter: blur(3px); }
+        .nav-overlay.open { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="ambient-bg"></div>
+    <div class="toast-container" id="toastBox"></div>
+    <div id="navOverlay" class="nav-overlay"></div>
+    
+    <div class="navbar">
+        <div style="display:flex; align-items:center;">
+            <button id="hamburgerBtn" class="hamburger-btn">☰</button>
+            <img src="assets/logo.png" alt="Logo" style="width: 40px; margin-right: 1rem;">
+            <div>
+                <strong style="font-size: 1.2rem;" id="viewTitle">Hub Operativo (Progetti)</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);" id="dateDisplay"></div>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap: 1rem;">
+            <div style="text-align: right;">
+                <div id="userName" style="font-weight: bold;">User Name</div>
+                <div id="userRole" style="font-size: 0.8rem; color: var(--accent);">Role</div>
+            </div>
+            <div id="userInitial" style="width: 40px; height: 40px; border-radius: 50%; background: var(--glass-border); display:flex; align-items:center; justify-content:center; overflow:hidden;">U</div>
+            <button id="logoutBtn" class="btn btn-outline" style="padding: 0.5rem 1rem;">Esci</button>
+        </div>
+    </div>
+
+    <div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+        
+        <!-- Navbar or Tabs -->
+        <div class="nav-menu" id="navMenu">
+            <div class="mobile-title">
+                <strong>Martian Manager</strong>
+                <button id="closeMenuBtn" style="float: right; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <button class="nav-btn active" data-target="projects">🔥 Hub Progetti</button>
+            <button class="nav-btn" data-target="kanban">📋 Bacheca IT / Task</button>
+            <button class="nav-btn" data-target="archive">📁 Storico Archiviati</button>
+            <button class="nav-btn" data-target="calendar">📅 Eventi Cinema</button>
+            <button class="nav-btn" data-target="team">👥 Rubrica</button>
+            <button class="nav-btn" data-target="reimburse">💸 Rimborsi</button>
+            <button class="nav-btn" data-target="profile">👤 Mio Profilo</button>
+            
+            <button class="nav-btn" data-target="hr" id="hrMenuLink" style="display:none; margin-left: auto; border-color: var(--warning); color: var(--warning);">⚡ Manager HR</button>
+            <button class="nav-btn" data-target="directory" id="directoryMenuLink" style="display:none; border-color: var(--danger); color: var(--danger);">🔒 Directory Utenti</button>
+        </div>
+
+        <div style="display:flex; gap: 1rem; margin-bottom: 2rem;">
+            <button id="btnNewProject" class="btn btn-primary" style="display:none;">+ Nuovo Progetto</button>
+            <button id="btnNewTask" class="btn btn-outline" style="display:none;">+ Assegna Task</button>
+        </div>
+
+        <!-- VIEWS -->
+        <div id="view-projects" class="view-section active">
+            <div id="projectsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;"></div>
+        </div>
+
+        <div id="view-kanban" class="view-section">
+            <div style="margin-bottom: 1.5rem; display:flex; align-items:center; gap:1rem;">
+                <label>Filtra Progetto:</label>
+                <select id="filterProjectKanban" class="input-group" style="padding:0.5rem; border-radius:4px; margin:0; width: 300px;"></select>
+            </div>
+            <div class="kanban-board">
+                <div id="col-todo" class="kanban-col"></div>
+                <div id="col-doing" class="kanban-col"></div>
+                <div id="col-validation" class="kanban-col" style="border-top: 4px solid var(--accent);"></div>
+            </div>
+        </div>
+
+        <div id="view-calendar" class="view-section">
+            <div id="calendarGrid"></div>
+        </div>
+
+        <div id="view-team" class="view-section">
+            <div id="teamContainer"></div>
+        </div>
+
+        <div id="view-hr" class="view-section">
+            <div class="glass-panel" style="padding: 2rem;">
+                <table id="hrTable">
+                    <thead><tr><th>Tirocinante</th><th>Azienda</th><th>Periodo</th><th>Valutazione</th><th>KPI</th><th>Note Confidenziali</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-directory" class="view-section">
+            <div class="glass-panel" style="padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0;">Anagrafica Confidenziale Utenti</h3>
+                    <button class="btn btn-primary" id="btnGenerateIntern">+ Genera Tirocinante</button>
+                </div>
+                <table id="directoryTable">
+                    <thead><tr><th>Nome</th><th>Ruolo & Email</th><th>Contatti Accessori</th><th>Dettagli Stage</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-profile" class="view-section">
+            <div class="glass-panel" style="padding: 2rem; max-width: 600px; margin: 0 auto;">
+                <h3 style="margin-bottom: 1.5rem;">Gestione Profilo</h3>
+                
+                <div id="internDatesPanel" style="display:none; background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--accent);">
+                    <h4 style="margin-bottom: 1rem; color: var(--accent);">Informazioni Tirocinio</h4>
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem;"><strong>Data Inizio:</strong> <span id="valInternStart">-</span></p>
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem;"><strong>Data Fine Prevista:</strong> <span id="valInternEnd">-</span></p>
+                    <div id="internEndWarning" style="display:none; margin-top: 1rem; padding: 0.8rem; background: rgba(255,100,100,0.1); border: 1px solid var(--danger); border-radius: 4px; color: var(--danger); font-size: 0.85rem;">
+                        ⚠️ <strong>Attenzione:</strong> Il tuo tirocinio scade fra meno di 15 giorni. L'amministrazione è stata notificata per valutare proroghe o assunzioni.
+                    </div>
+                </div>
+
+                <div id="profilePicPreviewBig" style="width: 150px; height: 150px; border-radius: 50%; background: #333; margin: 0 auto 1.5rem auto; overflow: hidden; display:flex; align-items:center; justify-content:center;">Carica Foto</div>
+                <div class="input-group">
+                    <label>Modifica Foto Profilo</label>
+                    <input type="file" id="uploadProfilePic" accept="image/*">
+                </div>
+                
+                <div style="margin-top:2rem; padding-top:2rem; border-top: 1px solid var(--glass-border);">
+                    <h4 style="margin-bottom: 1rem;">Aggiorna Sicurezza Account</h4>
+                    <form id="formChangePassword">
+                        <div class="input-group">
+                            <label>Nuova Password</label>
+                            <input type="password" id="newPass" required placeholder="Inserisci nuova password">
+                        </div>
+                        <button class="btn btn-outline" type="submit" style="width:100%;">Modifica Password</button>
+                    </form>
+                </div>
+
+                <div class="intern-only-panel" style="display:none; margin-top:2rem; padding-top:2rem; border-top: 1px solid var(--glass-border);">
+                    <form id="internDatesForm">
+                        <label>Segnala Assenza o Variazione orario al Manager</label>
+                        <textarea class="input-group" style="width:100%; min-height: 80px; padding: 1rem; border-radius:4px; margin-top: 0.5rem;" required></textarea>
+                        <button class="btn btn-outline" type="submit" style="width:100%;">Invia Comunicazione</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-reimburse" class="view-section">
+            <div class="glass-panel" style="padding: 2rem; max-width: 600px; margin: 0 auto;">
+                <h3 style="margin-bottom: 1.5rem;">Modulo Rimborsi Spesa</h3>
+                <form id="formReimburse">
+                    <div class="input-group">
+                        <label>Oggetto Spesa / Attività</label>
+                        <input type="text" id="reActivity" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Importo (€)</label>
+                        <input type="number" step="0.01" id="reAmount" required>
+                    </div>
+                    <div class="input-group">
+                        <label>IBAN per accredito</label>
+                        <input type="text" id="reIban" required placeholder="IT00...">
+                    </div>
+                    <button class="btn btn-primary" type="submit" style="width:100%;">Genera Pratica Amministrativa</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="view-archive" class="view-section">
+            <div class="glass-panel" style="padding: 2rem;">
+                <h3 style="margin-bottom: 2rem; color: var(--accent);">Archivio Lavorazioni Completate</h3>
+                <div id="archiveContainer"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modals -->
+    <div id="modalProject">
+        <form id="formCreateProject" class="modal-content">
+            <h3 style="margin-bottom: 1.5rem;">Nuovo Progetto</h3>
+            <div class="input-group"><label>Nome Progetto</label><input type="text" id="projName" required></div>
+            <div class="input-group">
+                <label>Categoria</label>
+                <select id="projType" style="width:100%; padding: 0.8rem; border-radius: 4px;"><option>Produzione Film</option><option>Evento</option><option>IT / Tech</option></select>
+            </div>
+            <div class="input-group"><label>Link Google Drive (Modelli/Logistica)</label><input type="url" id="projDrive"></div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <button type="button" class="btn btn-outline" style="flex:1;" onclick="document.getElementById('modalProject').classList.remove('active')">Annulla</button>
+                <button type="submit" class="btn btn-primary" style="flex:1;">Salva Progetto</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="modalTask">
+        <form id="formCreateTask" class="modal-content">
+            <h3 style="margin-bottom: 1.5rem;">Assegna Task Operativo</h3>
+            <input type="hidden" id="taskProjId">
+            <div class="input-group"><label>Titolo Task</label><input type="text" id="taskTitle" required></div>
+            <div class="input-group"><label>Assegnatario (Tirocinante/Staff)</label><select id="taskAssignee" style="width:100%; padding:0.8rem; border-radius:4px;"></select></div>
+            <div class="input-group"><label>Data di Scadenza Assoluta</label><input type="date" id="taskDeadline" required></div>
+            <div class="input-group"><label>Link Risorsa</label><input type="url" id="taskDocs"></div>
+            <div class="input-group"><label>Briefing (Descrizione Dettagliata)</label><textarea id="taskDesc" rows="3" style="width:100%; padding:0.8rem; border-radius:4px;" required></textarea></div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <button type="button" class="btn btn-outline" style="flex:1;" onclick="document.getElementById('modalTask').classList.remove('active')">Annulla</button>
+                <button type="submit" class="btn btn-primary" style="flex:1;">Conferma Task</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="modalGenerateIntern" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 1000; align-items:center; justify-content:center;">
+        <form id="formGenerateIntern" class="modal-content">
+            <h3 style="margin-bottom: 1.5rem;">Genera Account Tirocinante</h3>
+            <div class="input-group"><label>Nome</label><input type="text" id="intName" required></div>
+            <div class="input-group"><label>Cognome</label><input type="text" id="intSurname" required></div>
+            <div class="input-group"><label>Username</label><input type="text" id="intUsername" required placeholder="Es. m.rossi"></div>
+            <div class="input-group"><label>Password Provvisoria</label><input type="password" id="intPassword" required></div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <button type="button" class="btn btn-outline" style="flex:1;" onclick="document.getElementById('modalGenerateIntern').style.display='none'">Annulla</button>
+                <button type="submit" class="btn btn-primary" style="flex:1;">Crea Tirocinante</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="js/dashboard.js?v=6"></script>
+</body>
+</html>

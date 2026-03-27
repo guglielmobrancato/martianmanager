@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast.remove(), 6000);
     }
 
-    let db = {
+    let defaultDb = {
         projects: [
             { id: 1, name: 'Campagna Social Marzo', type: 'Piano Editoriale' },
             { id: 2, name: 'Shooting Velvet Mag', type: 'Produzione Film' },
@@ -192,6 +192,16 @@ document.addEventListener('DOMContentLoaded', () => {
             { title: "Marché du Film (Cannes)", date: "13 - 24 Maggio", location: "Cannes, FR", type: "Mercato Global", icon: "🌴" }
         ]
     };
+
+    let db = JSON.parse(localStorage.getItem('msh_app_db'));
+    if (!db) {
+        db = defaultDb;
+        localStorage.setItem('msh_app_db', JSON.stringify(db));
+    }
+
+    function saveDb() {
+        localStorage.setItem('msh_app_db', JSON.stringify(db));
+    }
 
     // Helper: Map Type to Class
     function getTypeClass(type) {
@@ -461,6 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendMockEmail('Manager Team', `Tirocinante ha richiesto convalida per: ${task.title}`);
             }
             
+            saveDb();
             renderKanban(document.getElementById('filterProjectKanban').value);
             renderApp();
         }
@@ -473,6 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
             task.approvedBy = document.getElementById('userName').innerText;
             task.approvedAt = new Date().toLocaleDateString('it-IT');
             sendMockEmail(task.assignee, `OTTIMO LAVORO! Il Manager ha approvato il task: ${task.title}`);
+            saveDb();
             renderKanban(document.getElementById('filterProjectKanban').value);
             renderApp();
         }
@@ -487,6 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(confirm('Attenzione! Sei davvero sicuro di voler eliminare in via definitiva l\'intero progetto e TUTTI i task associati ad esso? L\'operazione non è annullabile.')) {
             db.projects = db.projects.filter(p => p.id !== id);
             db.tasks = db.tasks.filter(t => t.projId !== id);
+            saveDb();
             
             // Re-render and navigate mostly back to hub
             document.getElementById('filterProjectKanban').value = 'all';
@@ -511,6 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newId = db.projects.length + 1;
             
             db.projects.push({ id: newId, name: pName, type: pType, drive: pDrive });
+            saveDb();
             document.getElementById('modalProject').classList.remove('active');
             
             alert(`Progetto "${pName}" creato con successo! Ora puoi assegnargli dei Task.`);
@@ -563,6 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 createdAt: new Date().toLocaleDateString('it-IT')
             });
             
+            saveDb();
             document.getElementById('modalTask').classList.remove('active');
             document.getElementById('formCreateTask').reset();
             

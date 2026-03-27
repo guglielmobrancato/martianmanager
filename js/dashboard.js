@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'projects': 'Hub Operativo (Progetti)',
             'kanban': 'Bacheca Lavorazioni',
             'archive': 'Storico Lavorazioni Completate',
+            'notifications': 'Registro Log di Sistema & Notifiche',
             'calendar': 'Home / Calendario Eventi',
             'academy': 'Centro Apprendimento',
             'hr': 'Performance e KPI Tirocinanti',
@@ -161,6 +162,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('toastBox').appendChild(toast);
         // Play sound if you wanted, but we just remove it after 6s
         setTimeout(() => toast.remove(), 6000);
+
+        if (typeof db !== 'undefined' && db && db.notifications) {
+            db.notifications.unshift({
+                date: new Date().toLocaleString('it-IT'),
+                to: finalTo,
+                subject: subject,
+                body: body
+            });
+            saveDb();
+            
+            const notifBox = document.getElementById('notificationsContainer');
+            if(notifBox && document.getElementById('view-notifications').classList.contains('active')){
+                renderApp(); 
+            }
+        }
     }
 
     let defaultDb = {
@@ -190,13 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
             { title: "Bif&st Bari International Film Fest", date: "16 - 23 Marzo", location: "Bari, IT", type: "Festival Nazionale", icon: "🎭" },
             { title: "European Film Market (EFM)", date: "13 - 19 Febbraio", location: "Berlino, DE", type: "Mercato Europeo", icon: "🐻" },
             { title: "Marché du Film (Cannes)", date: "13 - 24 Maggio", location: "Cannes, FR", type: "Mercato Global", icon: "🌴" }
-        ]
+        ],
+        notifications: []
     };
 
     let db = JSON.parse(localStorage.getItem('msh_app_db'));
     if (!db) {
         db = defaultDb;
         localStorage.setItem('msh_app_db', JSON.stringify(db));
+    }
+    if (!db.notifications) {
+        db.notifications = [];
+        saveDb();
     }
 
     function saveDb() {
@@ -396,6 +417,39 @@ document.addEventListener('DOMContentLoaded', () => {
                         archiveContainer.innerHTML += html;
                     }
                 });
+            }
+        }
+
+        // --- Render Notifications ---
+        const notifContainer = document.getElementById('notificationsContainer');
+        if (notifContainer) {
+            notifContainer.innerHTML = '';
+            
+            if (!db.notifications || db.notifications.length === 0) {
+                notifContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 2rem;">Nessuna notifica di sistema registrata.</p>';
+            } else {
+                let html = `<div style="display: flex; flex-direction: column; gap: 1rem;">`;
+                let displayNotifs = Object.assign([], db.notifications);
+                if (!isAdmin) {
+                    displayNotifs = db.notifications.filter(n => 
+                        n.to.includes('Tutti') || n.to.includes('intern') || n.to.includes(user.firstName)
+                    );
+                }
+                
+                displayNotifs.forEach(n => {
+                    html += `
+                        <div style="background: rgba(0,0,0,0.3); border-left: 3px solid var(--accent); padding: 1rem; border-radius: 4px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                                <span>A: <strong style="color:var(--accent);">${n.to}</strong></span>
+                                <span>🕒 ${n.date}</span>
+                            </div>
+                            <h4 style="margin-bottom: 0.3rem;">${n.subject}</h4>
+                            ${n.body ? `<p style="font-size: 0.85rem; color: var(--text-muted); white-space: pre-wrap;">${n.body}</p>` : ''}
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+                notifContainer.innerHTML = html;
             }
         }
     }

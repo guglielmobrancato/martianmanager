@@ -497,8 +497,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deleteProject = function(id, event) {
         event.stopPropagation();
         if(confirm('Attenzione! Sei davvero sicuro di voler eliminare in via definitiva l\'intero progetto e TUTTI i task associati ad esso? L\'operazione non è annullabile.')) {
-            db.projects = db.projects.filter(p => p.id !== id);
-            db.tasks = db.tasks.filter(t => t.projId !== id);
+            db.projects = db.projects.filter(p => p.id != id);
+            db.tasks = db.tasks.filter(t => t.projId != id);
             saveDb();
             
             // Re-render and navigate mostly back to hub

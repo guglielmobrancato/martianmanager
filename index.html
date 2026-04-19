@@ -3,46 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Martian Manager | Login</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" href="assets/logo.png?v=2" type="image/png">
+    <title>Sito non disponibile | Marte Hub</title>
+    <!-- Reindirizzamento automatico all'Hub dopo 3 secondi -->
+    <meta http-equiv="refresh" content="3;url=https://hub.martestudios.com" />
+    <style>
+        body { 
+            background: #050202; 
+            color: #ffffff; 
+            font-family: sans-serif; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            text-align: center;
+        }
+        h1 { color: #ff5500; letter-spacing: 2px; text-transform: uppercase; }
+        p { color: #ffccb3; font-size: 1.1rem; }
+        a { color: #ff5500; text-decoration: none; font-weight: bold; }
+    </style>
 </head>
 <body>
-    <div class="ambient-bg"></div>
-
-    <div class="login-container">
-        <div class="glass-panel login-box">
-            <img src="assets/logo.png" alt="Marte Studios Logo" class="login-logo" style="width: 80px; height: auto;">
-            
-            <h1 class="title-glow">Martian Manager</h1>
-            <p class="subtitle">Internal Access Only</p>
-
-            <form id="loginForm">
-                <div class="input-group">
-                    <label for="email">Username o Work Email</label>
-                    <input type="text" id="email" placeholder="m.rossi o nome@martestudios.com" required>
-                </div>
-                
-                <div class="input-group">
-                    <label for="password">Access Key</label>
-                    <input type="password" id="password" placeholder="••••••••" required>
-                </div>
-
-                <div class="input-group" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem;">
-                    <input type="checkbox" id="remember" style="width: auto; padding: 0;">
-                    <label for="remember" style="margin: 0; display: inline; cursor: pointer;">Stay connected to module</label>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Initialize Link</button>
-            </form>
-            
-            <div style="margin-top: 2rem; font-size: 0.85rem; color: var(--text-muted);">
-                <p>Non hai un account? <a href="register.html" style="color: var(--accent); font-weight: bold; text-decoration: none;">Iscriviti al Portale</a></p>
-                <p style="margin-top: 1rem;">Simulazione Base: Prova con <strong>g.brancato@martestudios.com</strong> (Admin) o <strong>intern@martestudios.com</strong> (Tirocinante)</p>
-            </div>
-        </div>
+    <div style="padding: 20px;">
+        <h1>Accesso Riservato</h1>
+        <p>Questo portale è temporaneamente offline o accessibile solo agli addetti ai lavori.</p>
+        <p>Verrai reindirizzato all'<b>Hub di Marte</b> tra pochi istanti.</p>
+        <p style="margin-top: 30px; font-size: 0.9rem;">
+            Se non vieni reindirizzato, <a href="https://hub.martestudios.com">clicca qui</a>.
+        </p>
     </div>
-
-    <script src="js/app.js"></script>
 </body>
 </html>
